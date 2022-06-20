@@ -1,0 +1,2 @@
+[webservers]
+integral-caiman.southeastasia.cloudapp.azure.com ansible_user=ubuntu

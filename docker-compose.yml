@@ -1,0 +1,51 @@
+version: '3'
+
+volumes:
+    prometheus_data: {}
+    grafana_data: {}
+
+services:
+  weather:
+    image: kjanshair/weather_exporter:latest
+    container_name: weather
+    environment:
+      - OPENWEATHER_API_TOKEN=04959c0acae174d987a2bcf05122737f
+    ports:
+      - 80:9966
+    volumes:
+      - ./weather/cities.yaml:/config/cities.yaml
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    volumes:
+      - ./monitoring/prometheus/:/etc/prometheus/
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention=200h'
+      - '--web.enable-lifecycle'
+    # restart: unless-stopped
+    ports:
+      - "9090:9090"
+
+  grafana:
+   image: grafana/grafana:latest
+   container_name: grafana
+   volumes:
+     - grafana_data:/var/lib/grafana
+   environment:
+     - GF_SECURITY_ADMIN_USER=${ADMIN_USER:-admin}
+     - GF_SECURITY_ADMIN_PASSWORD=${ADMIN_PASSWORD:-admin}
+     - GF_USERS_ALLOW_SIGN_UP=false
+   restart: unless-stopped
+   ports:
+     - 3000:3000
+
+networks:
+    default:
+      external:
+        name: isolated_network

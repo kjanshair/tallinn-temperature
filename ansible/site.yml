@@ -1,0 +1,32 @@
+######################
+# Works with AWS EC2
+######################
+---
+- name: install and configure webservers
+  hosts: webservers
+  gather_facts: false
+
+  pre_tasks:
+  - name: Install python for Ansible
+    raw: test -e /usr/bin/python || (apt -y update && apt install -y python2-minimal)
+    changed_when: False
+  - setup: # aka gather_facts
+
+  vars:
+    docker_users:
+     - '{{ ansible_user }}'
+  
+  become: true # Changed in Ansible 2.x+
+  roles:
+    - geerlingguy.docker
+
+  # post_tasks:
+  #  - name: change hostname
+  #    hostname:
+  #      name: "{{ hostname }}"
+  #  - name: add myself to /etc/hosts
+  #    lineinfile:
+  #      dest: /etc/hosts
+  #      regexp: '^127\.0\.0\.1[ \t]+localhost'
+  #      line: '127.0.0.1 localhost {{ hostname }}'
+  #      state: present
